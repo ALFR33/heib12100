@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>heib12</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#000;color:#fff;font-family:Cairo,system-ui,sans-serif;overflow:hidden}
+button{background:none;border:0;color:inherit;font:inherit;cursor:pointer}
+#app{position:relative;max-width:480px;height:100dvh;margin:auto;background:#000;overflow:hidden}
+#feed{height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none}
+#feed::-webkit-scrollbar{display:none}
+.card{position:relative;height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;background:#111}
+.card video{width:100%;height:100%;object-fit:cover;display:block}
+.shade{position:absolute;inset:auto 0 0 0;height:45%;background:linear-gradient(transparent,rgba(0,0,0,.85));pointer-events:none}
+.side{position:absolute;left:10px;bottom:90px;display:flex;flex-direction:column;align-items:center;gap:18px}
+.side button{display:flex;flex-direction:column;align-items:center;font-size:12px;font-weight:700;text-shadow:0 1px 3px #000}
+.side svg{width:34px;height:34px;filter:drop-shadow(0 1px 2px #000)}
+.av{width:48px;height:48px;border-radius:50%;border:2px solid #fff;background:#fe2c55;display:grid;place-items:center;font-weight:900;font-size:20px;position:relative}
+.av .plus{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);width:20px;height:20px;border-radius:50%;background:#fe2c55;font-size:15px;line-height:20px;text-align:center}
+.liked svg{fill:#fe2c55;stroke:#fe2c55;animation:pop .35s}
+.saved svg{fill:#fdd835;stroke:#fdd835}
+@keyframes pop{50%{transform:scale(1.35)}}
+.disc{width:44px;height:44px;border-radius:50%;background:radial-gradient(#444 30%,#111 31%);border:6px solid #222;animation:spin 4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.info{position:absolute;right:14px;left:80px;bottom:80px;text-shadow:0 1px 3px #000}
+.info b{font-size:16px}.info p{font-size:14px;margin-top:4px}.info small{display:block;margin-top:6px;opacity:.85}
+.heart{position:absolute;top:50%;left:50%;font-size:110px;transform:translate(-50%,-50%) scale(0);pointer-events:none;color:#fe2c55}
+.heart.show{animation:big .8s}
+@keyframes big{30%{transform:translate(-50%,-50%) scale(1.2);opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
+.paused::after{content:"▶";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:70px;opacity:.7;pointer-events:none}
+header{position:absolute;top:0;inset-inline:0;z-index:5;display:flex;justify-content:center;gap:22px;padding:14px;font-weight:700;text-shadow:0 1px 3px #000}
+header span{opacity:.6;cursor:pointer}header span.on{opacity:1;border-bottom:2px solid #fff}
+nav{position:absolute;bottom:0;inset-inline:0;z-index:5;display:flex;justify-content:space-around;align-items:center;background:#000;border-top:1px solid #222;padding:6px 0 calc(6px + env(safe-area-inset-bottom));font-size:11px}
+nav button{display:flex;flex-direction:column;align-items:center;opacity:.6}nav button.on{opacity:1}
+nav svg{width:24px;height:24px}
+.add{width:46px;height:30px;border-radius:8px;background:#fff;color:#000;font-size:22px;font-weight:900;box-shadow:-4px 0 #25f4ee,4px 0 #fe2c55;opacity:1!important}
+.sheet{position:absolute;inset:0;z-index:20;display:none;flex-direction:column;justify-content:flex-end}
+.sheet.open{display:flex}
+.sheet .bg{position:absolute;inset:0;background:rgba(0,0,0,.55)}
+.panel{position:relative;background:#fff;color:#111;border-radius:18px 18px 0 0;padding:16px;max-height:70%;display:flex;flex-direction:column}
+.panel h3{text-align:center;font-size:15px;margin-bottom:10px}
+.list{overflow-y:auto;flex:1;min-height:120px}
+.cm{display:flex;gap:8px;margin-bottom:12px}.cm .av{width:34px;height:34px;font-size:14px;border:0;color:#fff;flex-shrink:0}
+.cm small{color:#888;font-weight:700}
+.row{display:flex;gap:8px;margin-top:10px}
+input,textarea{flex:1;border:1px solid #ddd;border-radius:22px;padding:10px 14px;font:inherit;outline:none;width:100%}
+.btn{background:#fe2c55;color:#fff;border-radius:22px;padding:10px 18px;font-weight:700}
+.full{position:absolute;inset:0;z-index:15;background:#000;display:none;flex-direction:column;padding:20px;padding-bottom:80px;overflow-y:auto}
+.full.open{display:flex}
+.full h2{text-align:center;margin:10px 0 20px}
+.pick{border:2px dashed #555;border-radius:14px;height:260px;display:grid;place-items:center;text-align:center;cursor:pointer;overflow:hidden}
+.pick video{width:100%;height:100%;object-fit:cover}
+.full textarea{border-radius:12px;margin:14px 0;background:#111;color:#fff;border-color:#333;min-height:80px}
+.full input{background:#111;color:#fff;border-color:#333;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:16px}
+.grid video{width:100%;aspect-ratio:9/16;object-fit:cover;background:#222}
+.stats{display:flex;justify-content:center;gap:28px;text-align:center;margin:12px 0}
+.stats b{display:block;font-size:18px}
+.toast{position:absolute;top:60px;left:50%;transform:translateX(-50%);background:rgba(40,40,40,.95);padding:8px 18px;border-radius:20px;z-index:50;font-size:14px;display:none}
+.empty{text-align:center;color:#888;margin-top:30px}
+
+/* ===== TikTok-style polish ===== */
+#app{box-shadow:0 0 60px rgba(0,0,0,.6)}
+header{justify-content:space-between;align-items:center;padding:14px 16px;background:linear-gradient(rgba(0,0,0,.45),transparent)}
+header .tabs{display:flex;gap:18px;font-size:17px}
+header .tabs span{opacity:.6;cursor:pointer;padding-bottom:4px}
+header .tabs span.on{opacity:1;border-bottom:3px solid #fff}
+.live{font-size:12px;font-weight:900;border:2px solid #fff;border-radius:6px;padding:0 5px;opacity:.9}
+.hsearch svg{width:26px;height:26px}
+.side{left:auto;right:8px;bottom:110px;gap:16px}
+.side svg{width:36px;height:36px}
+.av{background:linear-gradient(135deg,#fe2c55,#25f4ee)}
+.info{right:76px;left:14px;bottom:72px;text-align:right}
+.info b{font-size:17px}
+.info p{line-height:1.5;max-height:4.5em;overflow:hidden}
+.marq{overflow:hidden;white-space:nowrap;width:75%;margin-top:6px;font-size:13px}
+.marq span{display:inline-block;animation:mq 9s linear infinite}
+@keyframes mq{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.disc{display:grid;place-items:center;background:conic-gradient(#222,#444,#222,#444,#222);border:8px solid #111}
+.disc i{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#fe2c55,#25f4ee);font-style:normal;font-size:11px;font-weight:900;display:grid;place-items:center}
+.prog{position:absolute;bottom:56px;inset-inline:0;height:2px;background:rgba(255,255,255,.2)}
+.prog div{height:100%;width:0;background:#fff}
+.snd{position:absolute;top:64px;left:14px;background:rgba(0,0,0,.45);border-radius:20px;padding:6px 12px;font-size:13px;font-weight:700}
+nav{height:56px;padding:0;z-index:16}
+nav button{opacity:.75;font-size:10px;gap:2px}
+nav button.on{opacity:1;font-weight:700}
+.panel{border-radius:14px 14px 0 0;height:68%;max-height:none}
+.panel h3{font-size:14px;padding-bottom:10px;border-bottom:1px solid #eee}
+.cm{padding:4px 0}.cm .ctx{flex:1}.cm .ch{color:#999;font-size:16px}
+.cm small{font-size:13px}.cm .txt{font-size:15px;color:#161823}
+.row input{background:#f1f1f2;border:0}
+.full{padding:16px 0 70px}
+.ptop{display:flex;justify-content:space-between;align-items:center;padding:0 16px;font-weight:700}
+.pav{width:96px;height:96px;margin:16px auto 8px;border-radius:50%;background:linear-gradient(135deg,#fe2c55,#25f4ee);display:grid;place-items:center;font-size:40px;font-weight:900}
+.uname{text-align:center;font-weight:700;font-size:16px}
+.stats{gap:0;margin:16px 0}.stats>div{padding:0 22px;font-size:13px;color:#aaa}.stats>div+div{border-inline-start:1px solid #333}
+.stats b{color:#fff;font-size:17px}
+.pbtns{display:flex;gap:6px;justify-content:center}
+.pbtn{background:#2f2f2f;border-radius:6px;padding:9px 22px;font-weight:700;font-size:14px}
+.ptabs{display:flex;margin-top:18px;border-bottom:1px solid #222}
+.ptabs span{flex:1;text-align:center;padding:10px}.ptabs span.on{border-bottom:2px solid #fff}
+.grid{margin-top:2px;gap:1px}
+.gi{position:relative;cursor:pointer}.gi .vc{position:absolute;bottom:4px;right:6px;font-size:12px;font-weight:700;text-shadow:0 1px 2px #000}
+.sbar{margin:0 12px 12px}
+.sbar input{background:#1f1f1f;border:0;color:#fff;border-radius:6px}
+.tags{display:flex;gap:8px;overflow-x:auto;padding:0 12px 10px;scrollbar-width:none}
+.tags span{background:#1f1f1f;border-radius:16px;padding:6px 14px;white-space:nowrap;font-size:13px;cursor:pointer}
+.auth{padding:0 24px;display:flex;flex-direction:column}
+.auth input{background:#1f1f1f;border:0;color:#fff;border-radius:6px;margin-bottom:12px}
+.auth .btn{border-radius:6px;padding:13px}
+.logo{font-size:38px;font-weight:900;text-align:center;margin:30px 0 6px;text-shadow:-3px 0 #25f4ee,3px 0 #fe2c55}
+
+/* ===== كاميرا وبث مباشر ===== */
+.utabs{display:flex;gap:8px;justify-content:center;margin-bottom:14px}
+.utab{background:#1f1f1f;border-radius:20px;padding:8px 20px;font-weight:700;font-size:14px;color:#fff}
+.utab.on{background:#fe2c55}
+#camView{width:100%;height:340px;border-radius:14px;object-fit:cover;background:#111;transform:scaleX(-1)}
+.cambtns{display:flex;gap:14px;justify-content:center;margin-top:12px;align-items:center}
+.cbtn{background:#2f2f2f;border-radius:24px;padding:10px 18px;font-weight:700;font-size:14px}
+.crec{width:64px;height:64px;border-radius:50%;border:5px solid #fff;background:#fe2c55}
+.crec.stop{width:34px;height:34px;border-radius:10px;background:#fff;border:8px solid #fe2c55}
+.timer{text-align:center;font-weight:900;color:#fe2c55;margin-top:8px;font-variant-numeric:tabular-nums;min-height:20px}
+.lvfull{position:absolute;inset:0;z-index:25;background:#000;display:none;flex-direction:column}
+.lvfull.open{display:flex}
+.lvfull video{flex:1;width:100%;object-fit:cover;transform:scaleX(-1)}
+.lvtop{position:absolute;top:14px;inset-inline:12px;display:flex;justify-content:space-between;align-items:center}
+.lvbadge{background:#fe2c55;border-radius:6px;padding:3px 10px;font-weight:900;font-size:13px;display:flex;align-items:center;gap:6px}
+.lvbadge i{width:8px;height:8px;border-radius:50%;background:#fff;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.2}}
+.lvend{background:rgba(0,0,0,.5);border-radius:20px;padding:8px 16px;font-weight:700}
+.lvside{position:absolute;left:10px;bottom:80px;display:flex;flex-direction:column;gap:14px;font-size:30px;text-shadow:0 1px 3px #000}
+.lvmsg{position:absolute;right:12px;left:70px;bottom:90px;font-size:14px;text-shadow:0 1px 3px #000;max-height:180px;overflow:hidden}
+.lvmsg div{margin-top:6px;background:rgba(0,0,0,.35);border-radius:12px;padding:5px 10px;display:inline-block}
+
+@media(min-width:900px){
+#app{max-width:none;background:#000}
+nav{position:fixed;top:0;bottom:0;right:0;left:auto;width:240px;height:auto!important;flex-direction:column;justify-content:flex-start;align-items:stretch;gap:4px;padding:20px 12px!important;border-top:0;border-left:1px solid #1f1f1f;background:#121212;z-index:20}
+nav .logo{display:flex!important;align-items:center;gap:8px;font-size:26px;font-weight:900;padding:4px 10px 18px;text-shadow:-2px -1px 0 #25f4ee,2px 1px 0 #fe2c55}
+nav button{flex-direction:row!important;justify-content:flex-start;gap:14px!important;font-size:17px!important;font-weight:700;padding:10px 12px;border-radius:8px;opacity:1!important}
+nav button:hover{background:#1f1f1f}
+nav button.on{color:#fe2c55}
+nav button.add{width:auto!important;height:auto!important;background:none!important;box-shadow:none!important;border:0!important;font-size:17px!important}
+nav button.add::before{content:"＋  تحميل";font-size:17px}
+nav button.add{font-size:0!important}
+nav .dlive{display:flex!important}
+nav .dlogin{display:block!important;margin-top:14px;background:#fe2c55;color:#fff;font-weight:700;padding:11px;border-radius:6px;text-align:center}
+nav .dfoot{display:block!important;margin-top:auto;font-size:11px;color:#777;padding:10px}
+header{right:240px;left:0;justify-content:center;gap:40px}
+#feed{position:absolute;top:0;bottom:0;right:240px;left:0}
+.card{width:calc((100dvh - 32px)*9/16);height:calc(100dvh - 32px);margin:16px auto;border-radius:14px;overflow:hidden}
+.card video{border-radius:14px}
+header{right:240px;left:0;margin:auto;width:calc((100dvh - 32px)*9/16);top:16px;border-radius:14px 14px 0 0}
+nav button.add::before{color:#fff}
+.card .side button{background:none}
+.full,.lvfull{right:240px!important;left:0!important;width:auto!important}
+.sheet .panel{max-width:520px;margin-inline:auto}
+}
+nav .logo,nav .dlive,nav .dlogin,nav .dfoot{display:none}
+nav .dlogin.on{color:#fff}
+</style>
+</head>
+<body>
+<div id="app">
+  <header><span class="live">LIVE</span><div class="tabs"><span data-t="following">متابَعون</span><span data-t="foryou" class="on">لك</span></div><button class="hsearch" id="hs"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/></svg></button></header>
+  <div id="feed"></div>
+
+  <!-- رفع -->
+  <div class="full" id="upload">
+    <h2>نشر فيديو</h2>
+    <div class="utabs"><button class="utab on" id="trec">🎥 تصوير بالكاميرا</button><button class="utab" id="tfile">📁 من جهازك</button></div>
+    <div id="camBox">
+      <video id="camView" autoplay muted playsinline></video>
+      <div class="timer" id="rtime"></div>
+      <div class="cambtns"><button class="cbtn" id="flip">🔄 قلب الكاميرا</button><button class="crec" id="rec" aria-label="تسجيل"></button></div>
+    </div>
+    <label class="pick" id="pick" style="display:none"><span>📹<br>اضغط لاختيار فيديو من جهازك</span><input type="file" id="file" accept="video/*" hidden></label>
+    <textarea id="cap" placeholder="اكتب وصفاً... #هاشتاق"></textarea><input id="song" placeholder="اسم الصوت / الأغنية (اختياري)">
+    <button class="btn" id="publish">نشر</button>
+  </div>
+
+  <!-- حسابي -->
+  <div class="full" id="profile"></div><div class="full" id="explore"></div>
+
+  <!-- بث مباشر -->
+  <div class="lvfull" id="live">
+    <video id="lvCam" autoplay muted playsinline></video>
+    <div class="lvtop"><span class="lvbadge"><i></i>مباشر · <span id="lvwatch">1</span> مشاهد</span><button class="lvend" id="lvend">إنهاء ✕</button></div>
+    <div class="lvmsg" id="lvmsg"></div>
+    <div class="lvside"><span>🎁</span><span>❤️</span><span>💬</span><span>↗️</span></div>
+  </div>
+
+  <!-- تعليقات -->
+  <div class="sheet" id="sheet"><div class="bg"></div>
+    <div class="panel"><h3 id="ctitle">التعليقات</h3><div class="list" id="clist"></div>
+      <div class="row"><input id="cin" placeholder="أضف تعليقاً..."><button class="btn" id="csend">إرسال</button></div>
+    </div>
+  </div>
+
+  <nav><div class="logo">♪ heib12</div>
+    <button data-p="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v10h-6v-6H9v6H3z"/></svg>الرئيسية</button>
+    <button data-p="home2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-5-5"/></svg>استكشاف</button>
+    <button data-p="upload" class="add">+</button>
+    <button data-p="inbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H5l-1 4z"/></svg>الرسائل</button>
+    <button data-p="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>حسابي</button>
+    <button class="dlive"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 2l4 4 4-4"/></svg>LIVE</button>
+    <button class="dlogin" data-p="profile">تسجيل الدخول</button>
+    <div class="dfoot">الشركة · البرنامج · الشروط والسياسات<br>© 2026 heib12</div>
+  </nav>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+var sb=supabase.createClient("https://sekdvsytnpdvwrxbqyaj.supabase.co","sb_publishable__t_KWL24U2b_4BBk6BLciw_I2XL44KT");
+var me=null,myName="";var feed=document.getElementById("feed");var all=[];
+function $(id){return document.getElementById(id)}
+function fmt(n){return n>=1000?(n/1000).toFixed(1)+"K":String(n)}
+function toast(t){var e=$("toast");e.textContent=t;e.style.display="block";clearTimeout(e._t);e._t=setTimeout(function(){e.style.display="none"},2500)}
+function esc(s){var d=document.createElement("div");d.textContent=s==null?"":s;return d.innerHTML}
+var ICON={
+ heart:'<svg viewBox="0 0 24 24" fill="#fff" stroke="#fff" stroke-width="1"><path d="M12 21s-8-5.3-8-11a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 10c0 5.7-8 11-8 11z"/></svg>',
+ cm:'<svg viewBox="0 0 24 24" fill="#fff"><path d="M12 3C6.5 3 2 6.8 2 11.5c0 2.6 1.4 4.9 3.6 6.5L5 22l4.3-2.4c.9.2 1.8.4 2.7.4 5.5 0 10-3.8 10-8.5S17.5 3 12 3z"/></svg>',
+ save:'<svg viewBox="0 0 24 24" fill="#fff" stroke="#fff"><path d="M6 3h12v18l-6-4-6 4z"/></svg>',
+ share:'<svg viewBox="0 0 24 24" fill="#fff"><path d="M14 4l8 8-8 8v-5c-6 0-9 2-12 6 1-7 5-11 12-12z"/></svg>'};
+var observer=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.play().catch(function(){})}else{e.target.pause()}})},{threshold:.6});
+function needLogin(){toast("سجّل الدخول أولاً");show("profile")}
+
+async function loadFeed(){
+ feed.innerHTML='<div class="empty" style="margin-top:45vh">جارٍ التحميل...</div>';
+ var r=await sb.from("videos").select("id, video_path, caption, song, user_id, created_at, profiles(username), likes(count), comments(count)").order("created_at",{ascending:false}).limit(50);
+ if(r.error){feed.innerHTML='<div class="empty" style="margin-top:45vh">تعذر تحميل الفيديوهات</div>';return}
+ var paths=(r.data||[]).map(function(v){return v.video_path});
+ var urls={};if(paths.length){var su=await sb.storage.from("videos").createSignedUrls(paths,3600);(su.data||[]).forEach(function(x){urls[x.path]=x.signedUrl})}
+ all=(r.data||[]).map(function(v){return{id:v.id,src:urls[v.video_path]||"",user:(v.profiles&&v.profiles.username)||"مستخدم",userId:v.user_id,cap:v.caption||"",song:v.song||"صوت أصلي",likes:(v.likes[0]||{}).count||0,comments:(v.comments[0]||{}).count||0}});
+ render(all);
+}
+async function render(list){
+ feed.innerHTML="";
+ if(!list.length){feed.innerHTML='<div class="empty" style="margin-top:42vh;color:#fff"><b style="font-size:18px">لا توجد فيديوهات بعد</b><br><span style="color:#888">كن أول من ينشر على heib12 من زر +</span></div>';return}
+ var L={},S={},F={};
+ if(me){var ids=list.map(function(v){return v.id});
+  var a=await sb.from("likes").select("video_id").eq("user_id",me.id).in("video_id",ids);(a.data||[]).forEach(function(x){L[x.video_id]=1});
+  var b=await sb.from("saves").select("video_id").eq("user_id",me.id).in("video_id",ids);(b.data||[]).forEach(function(x){S[x.video_id]=1});
+  var c=await sb.from("follows").select("following_id").eq("follower_id",me.id);(c.data||[]).forEach(function(x){F[x.following_id]=1});}
+ list.forEach(function(v){feed.appendChild(card(v,!!L[v.id],!!S[v.id],!!F[v.userId]))});feed.scrollTop=0;
+}
+function card(v,liked,saved,fol){
+ var s=document.createElement("section");s.className="card";var likes=v.likes;
+ var isMe=me&&me.id===v.userId;
+ s.innerHTML='<video src="'+v.src+'" loop muted playsinline preload="metadata"></video><div class="shade"></div><div class="heart">♥</div>'+
+ '<div class="side"><div class="av">'+esc(v.user[0].toUpperCase())+(fol||isMe?'':'<button class="plus">+</button>')+'</div>'+
+ '<button class="lk'+(liked?' liked':'')+'">'+ICON.heart+'<span>'+fmt(likes)+'</span></button>'+
+ '<button class="cmb">'+ICON.cm+'<span>'+fmt(v.comments)+'</span></button>'+
+ '<button class="sv'+(saved?' saved':'')+'">'+ICON.save+'<span>حفظ</span></button>'+
+ '<button class="sh">'+ICON.share+'<span>مشاركة</span></button><div class="disc"><i>'+esc(v.user[0].toUpperCase())+'</i></div></div>'+
+ '<div class="info"><b>@'+esc(v.user)+'</b><p>'+esc(v.cap)+'</p><div class="marq"><span>♫ '+esc(v.song)+' · @'+esc(v.user)+'</span></div></div><div class="prog"><div></div></div><button class="snd">🔇 اضغط للصوت</button>';
+ var vid=s.querySelector("video");observer.observe(vid);var t;var bar=s.querySelector(".prog div");vid.addEventListener("timeupdate",function(){if(vid.duration)bar.style.width=(vid.currentTime/vid.duration*100)+"%"});var snd=s.querySelector(".snd");snd.onclick=function(){window.__sound=!window.__sound;document.querySelectorAll(".card video").forEach(function(x){x.muted=!window.__sound});document.querySelectorAll(".snd").forEach(function(b){b.textContent=window.__sound?"🔊":"🔇 اضغط للصوت"})};vid.muted=!window.__sound;if(window.__sound)snd.textContent="🔊";
+ vid.addEventListener("click",function(){clearTimeout(t);t=setTimeout(function(){if(vid.paused){vid.play();s.classList.remove("paused")}else{vid.pause();s.classList.add("paused")}},250)});
+ vid.addEventListener("dblclick",function(){clearTimeout(t);var h=s.querySelector(".heart");h.classList.remove("show");void h.offsetWidth;h.classList.add("show");if(!liked)like()});
+ async function like(){if(!me)return needLogin();liked=!liked;likes+=liked?1:-1;var b=s.querySelector(".lk");b.classList.toggle("liked",liked);b.querySelector("span").textContent=fmt(likes);
+  var r=liked?await sb.from("likes").insert({user_id:me.id,video_id:v.id}):await sb.from("likes").delete().eq("user_id",me.id).eq("video_id",v.id);if(r.error)toast("تعذر الحفظ")}
+ s.querySelector(".lk").onclick=like;
+ s.querySelector(".sv").onclick=async function(){if(!me)return needLogin();saved=!saved;this.classList.toggle("saved",saved);toast(saved?"تم الحفظ":"أُزيل من المحفوظات");
+  if(saved)await sb.from("saves").insert({user_id:me.id,video_id:v.id});else await sb.from("saves").delete().eq("user_id",me.id).eq("video_id",v.id)};
+ s.querySelector(".sh").onclick=function(){if(navigator.share){navigator.share({title:"heib12",text:v.cap,url:location.href}).catch(function(){})}else{navigator.clipboard&&navigator.clipboard.writeText(location.href);toast("تم نسخ الرابط")}};
+ var p=s.querySelector(".plus");if(p)p.onclick=async function(){if(!me)return needLogin();p.remove();await sb.from("follows").insert({follower_id:me.id,following_id:v.userId});toast("تتابع الآن @"+v.user)};
+ s.querySelector(".cmb").onclick=function(){openComments(v,s)};
+ return s;
+}
+var cur=null;
+async function openComments(v,s){cur={v:v,s:s};$("clist").innerHTML='<p class="empty">جارٍ التحميل...</p>';$("sheet").classList.add("open");
+ var r=await sb.from("comments").select("id, content, created_at, profiles(username)").eq("video_id",v.id).order("created_at",{ascending:false});
+ cur.list=(r.data||[]).map(function(c){return{u:(c.profiles&&c.profiles.username)||"مستخدم",t:c.content}});draw()}
+function draw(){var l=cur.list;$("ctitle").textContent="التعليقات ("+l.length+")";cur.s.querySelector(".cmb span").textContent=fmt(l.length);
+ $("clist").innerHTML=l.length?l.map(function(c){return '<div class="cm"><div class="av">'+esc(c.u[0].toUpperCase())+'</div><div class="ctx"><small>'+esc(c.u)+'</small><div class="txt">'+esc(c.t)+'</div></div><div class="ch">♡</div></div>'}).join(""):'<p class="empty">كن أول من يعلّق!</p>'}
+async function sendC(){var t=$("cin").value.trim();if(!t)return;if(!me){$("sheet").classList.remove("open");return needLogin()}
+ var r=await sb.from("comments").insert({user_id:me.id,video_id:cur.v.id,content:t});if(r.error){toast("تعذر إرسال التعليق");return}
+ cur.list.unshift({u:myName||"أنت",t:t});$("cin").value="";draw()}
+$("csend").onclick=sendC;$("cin").onkeydown=function(e){if(e.key==="Enter")sendC()};
+document.querySelector("#sheet .bg").onclick=function(){$("sheet").classList.remove("open")};
+
+function show(p){
+ document.querySelectorAll("nav button").forEach(function(b){b.classList.toggle("on",b.dataset.p===p)});
+ $("upload").classList.toggle("open",p==="upload");$("explore").classList.toggle("open",p==="home2");if(p==="home2")drawExplore();$("profile").classList.toggle("open",p==="profile"||p==="inbox");
+ if(p!=="home")document.querySelectorAll("video").forEach(function(v){v.pause()});
+ if(p!=="upload")stopCam();
+ if(p==="upload"&&$("trec").classList.contains("on"))startCam();
+ if(p==="profile")drawProfile();
+ if(p==="inbox")$("profile").innerHTML='<h2>الرسائل</h2><p class="empty">لا توجد رسائل بعد</p>';
+ 
+}
+document.querySelectorAll("nav button[data-p]").forEach(function(b){b.onclick=function(){if(b.dataset.p==="upload"&&!me)return needLogin();show(b.dataset.p)}});
+document.querySelectorAll("header .tabs span").forEach(function(h){h.onclick=async function(){document.querySelectorAll("header .tabs span").forEach(function(x){x.classList.remove("on")});h.classList.add("on");
+ if(h.dataset.t==="following"){if(!me)return needLogin();var c=await sb.from("follows").select("following_id").eq("follower_id",me.id);var ids=(c.data||[]).map(function(x){return x.following_id});var f=all.filter(function(v){return ids.indexOf(v.userId)>=0});if(!f.length)toast("لا توجد فيديوهات ممن تتابعهم");render(f)}else render(all)}});
+
+function gridHtml(list){return list.length?'<div class="grid">'+list.map(function(v){return '<div class="gi" data-open="'+v.id+'"><video src="'+v.src+'" muted preload="metadata"></video><span class="vc">♡ '+fmt(v.likes)+'</span></div>'}).join("")+'</div>':'<p class="empty">لا توجد فيديوهات</p>'}
+function bindGrid(el){el.querySelectorAll("[data-open]").forEach(function(g){g.onclick=function(e){if(e.target.closest("[data-del]"))return;var i=all.findIndex(function(v){return v.id===g.dataset.open});show("home");render(all.slice(i).concat(all.slice(0,i)))}})}
+function drawExplore(q){var E=$("explore");q=q||"";
+ var l=all.filter(function(v){return !q||(v.cap+" "+v.user+" "+v.song).indexOf(q)>=0});
+ E.innerHTML='<div class="sbar"><input id="sq" placeholder="بحث" value="'+esc(q)+'"></div><div class="tags"><span>#ترند</span><span>#ضحك</span><span>#سفر</span><span>#رياضة</span><span>#طبخ</span><span>#موسيقى</span></div>'+gridHtml(l);
+ var i=$("sq");i.onchange=function(){drawExplore(i.value)};
+ E.querySelectorAll(".tags span").forEach(function(t){t.onclick=function(){drawExplore(t.textContent.slice(1))}});bindGrid(E)}
+$("hs").onclick=function(){show("home2")};
+var mode="in";
+async function drawProfile(){var P=$("profile");
+ if(!me){P.innerHTML='<div class="auth"><div class="logo">heib12</div><p class="empty" style="margin:0 0 24px">'+(mode==="in"?"سجّل الدخول لتتابع وتعلّق وتنشر":"أنشئ حساباً وابدأ النشر")+'</p>'+(mode==="up"?'<input id="un" placeholder="اسم المستخدم">':'')+
+  '<input id="em" type="email" placeholder="البريد الإلكتروني"><input id="pw" type="password" placeholder="كلمة المرور (8 أحرف على الأقل)"><button class="btn" id="go">'+(mode==="in"?"دخول":"إنشاء حساب")+'</button>'+
+  '<p class="empty" style="cursor:pointer;color:#fe2c55" id="sw">'+(mode==="in"?"ليس لديك حساب؟ أنشئ حساباً":"لديك حساب؟ سجّل الدخول")+'</p></div>';
+  $("sw").onclick=function(){mode=mode==="in"?"up":"in";drawProfile()};
+  $("go").onclick=async function(){var em=$("em").value.trim(),pw=$("pw").value;if(!em||pw.length<8){toast("أدخل البريد وكلمة مرور 8 أحرف أو أكثر");return}this.disabled=true;
+   if(mode==="up"){var un=$("un").value.trim();var r=await sb.auth.signUp({email:em,password:pw,options:{data:{display_name:un||undefined,username:un||undefined}}});this.disabled=false;
+    if(r.error){toast(r.error.message.indexOf("weak")>=0||r.error.message.indexOf("pwned")>=0?"كلمة المرور ضعيفة، اختر أقوى":"تعذر إنشاء الحساب: "+r.error.message);return}
+    if(r.data&&r.data.session){mode="in";toast("تم إنشاء حسابك، أهلاً بك 👋");return}
+    P.innerHTML='<h2>تحقق من بريدك 📩</h2><p class="empty">أرسلنا رابط تأكيد إلى '+esc(em)+'. اضغطه ثم ارجع وسجّل الدخول.</p>';mode="in"}
+   else{var r2=await sb.auth.signInWithPassword({email:em,password:pw});this.disabled=false;if(r2.error){toast(r2.error.message.indexOf("confirm")>=0?"أكّد بريدك أولاً":"البريد أو كلمة المرور غير صحيحة");return}toast("أهلاً بك 👋")}};return}
+ var pr=await sb.from("profiles").select("username").eq("id",me.id).maybeSingle();myName=(pr.data&&pr.data.username)||"مستخدم";
+ var fo=await sb.from("follows").select("id",{count:"exact",head:true}).eq("follower_id",me.id);
+ var fr=await sb.from("follows").select("id",{count:"exact",head:true}).eq("following_id",me.id);
+ var mine=all.filter(function(v){return v.userId===me.id});
+ var tl=mine.reduce(function(n,v){return n+v.likes},0);
+ P.innerHTML='<div class="ptop"><span></span><span>'+esc(myName)+'</span><span id="out" style="cursor:pointer;font-size:13px">خروج</span></div><div class="pav">'+esc(myName[0].toUpperCase())+'</div><div class="uname">@'+esc(myName)+'</div>'+
+ '<div class="stats"><div><b>'+(fo.count||0)+'</b>أتابع</div><div><b>'+(fr.count||0)+'</b>متابِعون</div><div><b>'+fmt(tl)+'</b>إعجابات</div></div>'+
+ '<div class="pbtns"><button class="pbtn" id="pshare">مشاركة الملف</button><button class="pbtn" id="pup">+ نشر</button></div>'+
+ '<div class="ptabs"><span class="on">▦ فيديوهاتي</span></div>'+(mine.length?gridHtml(mine):'<p class="empty">انشر أول فيديو لك</p>');
+ P.querySelectorAll(".gi").forEach(function(g){var d=document.createElement("button");d.dataset.del=g.dataset.open;d.textContent="✕";d.style.cssText="position:absolute;top:4px;left:4px;background:rgba(0,0,0,.6);border-radius:50%;width:24px;height:24px";g.appendChild(d)});
+ bindGrid(P);$("pup").onclick=function(){show("upload")};$("pshare").onclick=function(){navigator.clipboard&&navigator.clipboard.writeText(location.href);toast("تم نسخ الرابط")};
+ $("out").onclick=async function(){await sb.auth.signOut()};
+ P.querySelectorAll("[data-del]").forEach(function(b){b.onclick=async function(){if(!confirm("حذف هذا الفيديو؟"))return;var r=await sb.from("videos").delete().eq("id",b.dataset.del);if(r.error){toast("تعذر الحذف");return}toast("تم الحذف");await loadFeed();drawProfile()}});
+}
+
+var picked=null;var FI=$("file");
+$("file").onchange=function(){var f=this.files[0];if(!f)return;if(f.type.indexOf("video")!==0){toast("اختر ملف فيديو");return}if(f.size>500*1024*1024){toast("الفيديو أكبر من 500MB");return}picked=f;$("pick").innerHTML='<video src="'+URL.createObjectURL(f)+'" autoplay muted loop playsinline></video>';$("pick").appendChild(this)};
+$("publish").onclick=async function(){if(!me)return needLogin();if(!picked){toast("اختر فيديو أولاً");return}var btn=this;btn.disabled=true;btn.textContent="جارٍ الرفع...";
+ var ext=(picked.name.split(".").pop()||"mp4");var path=me.id+"/"+crypto.randomUUID()+"."+ext;
+ var u=await sb.storage.from("videos").upload(path,picked);
+ if(!u.error){var d=await sb.from("videos").insert({user_id:me.id,video_path:path,caption:$("cap").value.trim()||null,song:$("song").value.trim()||null});u.error=d.error}
+ btn.disabled=false;btn.textContent="نشر";if(u.error){toast("تعذر النشر، حاول مرة أخرى");return}
+ picked=null;$("cap").value="";$("song").value="";$("pick").innerHTML='<span>📹<br>اضغط لاختيار فيديو من جهازك</span>';$("pick").appendChild(FI);
+ toast("تم النشر 🎉 يراه الجميع الآن");show("home");loadFeed()};
+
+/* ===== كاميرا التصوير ===== */
+var camStream=null,recorder=null,chunks=[],recTimer=null,recSec=0,faceMode="user";
+function stopCam(){if(camStream){camStream.getTracks().forEach(function(t){t.stop()});camStream=null}}
+async function startCam(){stopCam();try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:faceMode},audio:true});$("camView").srcObject=camStream}catch(e){toast("اسمح بالوصول للكاميرا والمايك من إعدادات المتصفح")}}
+$("trec").onclick=function(){$("trec").classList.add("on");$("tfile").classList.remove("on");$("camBox").style.display="block";$("pick").style.display="none";startCam()};
+$("tfile").onclick=function(){$("tfile").classList.add("on");$("trec").classList.remove("on");$("camBox").style.display="none";$("pick").style.display="grid";stopCam()};
+$("flip").onclick=function(){faceMode=faceMode==="user"?"environment":"user";startCam()};
+$("rec").onclick=function(){if(!camStream){toast("الكاميرا غير متاحة");return}
+ if(recorder&&recorder.state==="recording"){recorder.stop();return}
+ chunks=[];var mime=MediaRecorder.isTypeSupported("video/webm;codecs=vp9")?"video/webm;codecs=vp9":(MediaRecorder.isTypeSupported("video/mp4")?"video/mp4":"");
+ try{recorder=new MediaRecorder(camStream,mime?{mimeType:mime}:{})}catch(e){toast("التسجيل غير مدعوم في هذا المتصفح");return}
+ recorder.ondataavailable=function(e){if(e.data.size)chunks.push(e.data)};
+ recorder.onstop=function(){clearInterval(recTimer);$("rtime").textContent="";$("rec").classList.remove("stop");
+  var blob=new Blob(chunks,{type:recorder.mimeType||"video/webm"});var ext=blob.type.indexOf("mp4")>=0?"mp4":"webm";
+  picked=new File([blob],"camera."+ext,{type:blob.type});
+  $("tfile").click();$("pick").innerHTML='<video src="'+URL.createObjectURL(blob)+'" autoplay muted loop playsinline></video>';$("pick").appendChild(FI);toast("تم التصوير ✓ اكتب وصفاً وانشر")};
+ recorder.start();recSec=0;$("rec").classList.add("stop");
+ recTimer=setInterval(function(){recSec++;$("rtime").textContent="⏺ "+Math.floor(recSec/60)+":"+("0"+recSec%60).slice(-2);if(recSec>=180)recorder.stop()},1000)};
+
+/* ===== بث مباشر ===== */
+var lvStream=null,lvTimer=null;
+async function startLive(){if(!me)return needLogin();
+ try{lvStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:true})}catch(e){toast("اسمح بالوصول للكاميرا والمايك من إعدادات المتصفح");return}
+ $("lvCam").srcObject=lvStream;$("live").classList.add("open");
+ document.querySelectorAll("#feed video").forEach(function(v){v.pause()});
+ var n=1+Math.floor(Math.random()*8);$("lvwatch").textContent=n;
+ lvTimer=setInterval(function(){n+=Math.floor(Math.random()*3);$("lvwatch").textContent=n;
+  var msgs=["ماشاء الله 👏","أهلاً! 👋","وينك من زمان","استمر 🔥","❤️❤️","منور البث"];
+  var names=["سارة","أبو فهد","نورة","خالد","ريم","ماجد"];
+  if(Math.random()<.6){var d=document.createElement("div");d.innerHTML="<b>"+names[Math.floor(Math.random()*names.length)]+":</b> "+msgs[Math.floor(Math.random()*msgs.length)];$("lvmsg").appendChild(d);while($("lvmsg").children.length>6)$("lvmsg").firstChild.remove()}},2500)}
+function endLive(){$("live").classList.remove("open");if(lvStream){lvStream.getTracks().forEach(function(t){t.stop()});lvStream=null}clearInterval(lvTimer);$("lvmsg").innerHTML=""}
+$("lvend").onclick=endLive;
+document.querySelector("header .live").onclick=startLive;document.querySelector("nav .dlive").onclick=startLive;
+
+sb.auth.onAuthStateChange(function(ev,session){var was=me&&me.id;me=session?session.user:null;if((me&&me.id)!==was){if($("profile").classList.contains("open"))drawProfile();render(all)}});
+sb.auth.getSession().then(function(r){me=r.data.session?r.data.session.user:null;loadFeed()});
+})();
+</script>
+</body>
+</html>
